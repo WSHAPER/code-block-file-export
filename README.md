@@ -72,9 +72,10 @@ This plugin uses GitHub Actions to automate the release process:
    - Document all changes, bug fixes, and new features in this file
 
 2. Trigger the release workflow:
-   - Go to Actions Γò¼├┤Γö£├æΓö£├Ñ Release Plugin Γò¼├┤Γö£├æΓö£├Ñ Run workflow
+   - Go to Actions → Release Plugin → Run workflow
    - Enter the version number (matching your release notes file)
    - Add any additional notes if needed
+   - Select "Force update" if you need to overwrite an existing release
    - Click "Run workflow"
 
 3. The workflow will:
