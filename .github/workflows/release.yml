@@ -40,17 +40,34 @@ jobs:
             echo "TAG_EXISTS=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Check if GitHub release exists
+        id: check_release
+        uses: cardinalby/git-get-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag: ${{ github.event.inputs.version }}
+          doNotFailIfNotFound: true
+
+      - name: Delete existing release if force update
+        if: steps.check_release.outputs.id != '' && github.event.inputs.force_update == 'true'
+        uses: dev-drprasad/delete-release-action@v0.2.0
+        with:
+          repo: ${{ github.repository }}
+          token: ${{ github.token }}
+          release_id: ${{ steps.check_release.outputs.id }}
+
       - name: Delete existing tag if force update
-        if: steps.check_tag.outputs.TAG_EXISTS == 'true' && github.event.inputs.force_update == 'true'
+        if: (steps.check_tag.outputs.TAG_EXISTS == 'true' || steps.check_release.outputs.id != '') && github.event.inputs.force_update == 'true'
         run: |
-          git tag -d ${{ github.event.inputs.version }}
+          git tag -d ${{ github.event.inputs.version }} || true
           git push --delete origin ${{ github.event.inputs.version }} || true
           echo "Deleted existing tag ${{ github.event.inputs.version }}"
           
-      - name: Early exit if tag exists and not forcing update
-        if: steps.check_tag.outputs.TAG_EXISTS == 'true' && github.event.inputs.force_update != 'true'
+      - name: Early exit if tag or release exists and not forcing update
+        if: (steps.check_tag.outputs.TAG_EXISTS == 'true' || steps.check_release.outputs.id != '') && github.event.inputs.force_update != 'true'
         run: |
-          echo "::error::Tag ${{ github.event.inputs.version }} already exists. Enable 'Force update' if you want to recreate it."
+          echo "::error::Tag or release ${{ github.event.inputs.version }} already exists. Enable 'Force update' if you want to recreate it."
           exit 1
 
       - name: Setup Node.js
@@ -66,7 +83,7 @@ jobs:
             echo "RELEASE_NOTES_EXIST=true" >> $GITHUB_OUTPUT
           else
             echo "RELEASE_NOTES_EXIST=false" >> $GITHUB_OUTPUT
-            echo "ΓÜá∩╕Å Warning: No release notes found at releases/${{ github.event.inputs.version }}.md"
+            echo "⚠️ Warning: No release notes found at releases/${{ github.event.inputs.version }}.md"
           fi
 
       - name: Extract release notes
@@ -98,10 +115,27 @@ jobs:
           else
             echo '{"${{ github.event.inputs.version }}": "0.15.0"}' > versions.json
           fi
+
+      - name: Commit version updates
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add manifest.json versions.json
+          git commit -m "Bump version to ${{ github.event.inputs.version }}"
+          git push
           
       - name: Create tag
         run: |
           git tag ${{ github.event.inputs.version }}
+          git push origin ${{ github.event.inputs.version }}
+
+      - name: Create zip file
+        run: |
+          mkdir -p release/${{ github.event.inputs.version }}
+          cp main.js manifest.json styles.css release/${{ github.event.inputs.version }}/
+          cd release
+          zip -r ../code-block-file-export-${{ github.event.inputs.version }}.zip ${{ github.event.inputs.version }}
+          cd ..
 
       # Use the newer GitHub release action instead of the deprecated one
       - name: Create GitHub release
@@ -128,27 +162,4 @@ jobs:
             main.js
             manifest.json
             styles.css
-
-      - name: Create zip file
-        run: |
-          mkdir -p release/${{ github.event.inputs.version }}
-          cp main.js manifest.json styles.css release/${{ github.event.inputs.version }}/
-          cd release
-          zip -r ../code-block-file-export-${{ github.event.inputs.version }}.zip ${{ github.event.inputs.version }}
-          cd ..
-
-      - name: Upload zip file to release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.version }}
-          files: |
             code-block-file-export-${{ github.event.inputs.version }}.zip
-
-      - name: Commit version updates
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add manifest.json versions.json
-          git commit -m "Bump version to ${{ github.event.inputs.version }}"
-          git push
-          git push origin ${{ github.event.inputs.version }}
