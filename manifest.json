@@ -1,10 +1,10 @@
 {
-	"id": "code-block-file-export",
-	"name": "Code Block File Export",
-	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "Adds an export button to code blocks that allows exporting code to a file using browser download, with smart language detection.",
-	"author": "WSHAPER",
-	"authorUrl": "https://github.com/WSHAPER",
-	"isDesktopOnly": false
+  "id": "code-block-file-export",
+  "name": "Code Block File Export",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Adds an export button to code blocks that allows exporting code to a file using browser download, with smart language detection.",
+  "author": "WSHAPER",
+  "authorUrl": "https://github.com/WSHAPER",
+  "isDesktopOnly": false
 }
