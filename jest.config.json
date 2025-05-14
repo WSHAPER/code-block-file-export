@@ -1,0 +1,14 @@
+{
+  "transform": {
+    "^.+\\.tsx?$": ["ts-jest", {
+      "tsconfig": "tsconfig.json"
+    }]
+  },
+  "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+  "moduleNameMapper": {
+    "obsidian": "<rootDir>/__mocks__/obsidian.js"
+  },
+  "testEnvironment": "jsdom",
+  "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"]
+}

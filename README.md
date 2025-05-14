@@ -1,94 +1,91 @@
-# Obsidian Sample Plugin
+# Code Block File Export for Obsidian
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+This plugin adds an "Export to File" button to code blocks in Obsidian notes, allowing you to quickly save code snippets to files without having to manually copy and paste.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## Features
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+- Adds an export button to every code block in preview mode
+- Suggests filenames based on function or class names in the code
+- Uses the language of the code block for the file extension
+- Smart language-to-extension mapping (e.g., "javascript" becomes ".js")
+- Custom language mappings through JSON configuration
+- Works on both desktop and mobile devices using browser download functionality
 
-## First time developing plugins?
+## How to Use
 
-Quick starting guide for new plugin devs:
+1. Hover over any code block in preview mode
+2. Click the export button that appears next to the built-in copy button
+3. The code will be exported to a file using your browser's download functionality
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## Settings
 
-## Releasing new releases
+- **Default File Extension**: The file extension to use when the language of a code block cannot be detected
+- **Custom Language Mappings**: JSON configuration to define custom mappings from language names to file extensions
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+## Installation
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+### From Obsidian Community Plugins
 
-## Adding your plugin to the community plugin list
+1. Open Settings in Obsidian
+2. Go to Community Plugins and turn off Safe Mode
+3. Click Browse and search for "Code Block File Export"
+4. Install the plugin and enable it
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+### Manual Installation
 
-## How to use
+1. Download the latest release from the GitHub repository
+2. Extract the files into your vault's `.obsidian/plugins/code-block-file-export` directory
+3. Restart Obsidian
+4. Enable the plugin in the Community Plugins settings
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+## Development
 
-## Manually installing the plugin
+This plugin uses TypeScript to provide type checking and documentation.
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+### First-time setup
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+1. Clone this repository to your development environment
+2. `npm install` to install dependencies
+3. `npm run dev` to start compilation in watch mode
 
-## Funding URL
+### Building
 
-You can include funding URLs where people who use your plugin can financially support it.
+- `npm run build` to compile the plugin
+- `npm run version` to bump the version number
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+### Testing
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+This plugin includes a comprehensive test suite using Jest:
 
-If you have multiple URLs, you can also do:
+- `npm test` to run the tests
+- `npm run test:watch` to run tests in watch mode
+- `npm run test:coverage` to generate a coverage report
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+Tests are automatically run on each push and pull request via GitHub Actions, ensuring code quality and preventing regressions.
 
-## API Documentation
+### Release Process
 
-See https://github.com/obsidianmd/obsidian-api
+This plugin uses GitHub Actions to automate the release process:
+
+1. Create a new release notes file in the `releases` directory named `[version].md` (e.g., `1.0.1.md`)
+   - Use the template in `releases/TEMPLATE.md` as a starting point
+   - Document all changes, bug fixes, and new features in this file
+
+2. Trigger the release workflow:
+   - Go to Actions Γò¼├┤Γö£├æΓö£├Ñ Release Plugin Γò¼├┤Γö£├æΓö£├Ñ Run workflow
+   - Enter the version number (matching your release notes file)
+   - Add any additional notes if needed
+   - Click "Run workflow"
+
+3. The workflow will:
+   - Update version numbers in manifest.json and versions.json
+   - Build the plugin
+   - Create a GitHub release with the content from your release notes file
+   - Upload all necessary files as release assets
+   - Commit the version changes back to the repository
+
+All past and upcoming releases are documented in the `releases` directory.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

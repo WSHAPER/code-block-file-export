@@ -1,8 +1,53 @@
-/*
+/* Code block export button styles */
+.markdown-rendered button.code-block-export-button {
+    /* Match the copy button styling */
+    margin: 6px;
+    padding: 6px 8px;
+    height: auto;
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+    font-family: var(--font-interface);
+    position: absolute;
+    top: 0;
+    /* Position it to the left of the copy button */
+    inset-inline-end: 36px;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* Match the copy button hover styling */
+.markdown-rendered button.code-block-export-button:hover {
+    color: var(--text-normal);
+    background-color: var(--interactive-hover);
+}
 
-If your plugin does not need CSS, delete this file.
+/* Show the export button only on hover, just like the copy button */
+.markdown-rendered pre:not(:hover) > button.code-block-export-button {
+    display: none;
+}
 
-*/
+/* Export icon styling */
+.code-block-export-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+}
+
+/* No longer need modal styles, as we've removed the modal */
+
+/* Additional spacing for info text in settings */
+.code-block-export-info {
+    margin-top: var(--size-4-2);
+}
+
+/* Styles for the JSON input in settings */
+.code-block-export-json-input {
+    font-family: var(--font-monospace);
+    min-height: 100px;
+}
+
+.code-block-export-json-input.is-invalid {
+    border-color: var(--text-error) !important;
+}

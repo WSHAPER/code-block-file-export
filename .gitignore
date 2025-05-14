@@ -8,9 +8,9 @@
 # npm
 node_modules
 
-# Don't include the compiled main.js file in the repo.
-# They should be uploaded to GitHub releases instead.
-main.js
+# main.js is now included in the repo as per Obsidian plugin specifications
+# Uncomment the next line if you want to exclude it again
+# main.js
 
 # Exclude sourcemaps
 *.map

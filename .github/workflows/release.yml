@@ -1,0 +1,154 @@
+name: Release Plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.1)'
+        required: true
+      custom_notes:
+        description: 'Additional release notes (optional)'
+        required: false
+      force_update:
+        description: 'Force update if tag already exists'
+        type: boolean
+        default: false
+        required: false
+
+# Explicitly set permissions needed for release creation
+permissions:
+  contents: write
+  discussions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for tags
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if git tag -l "${{ github.event.inputs.version }}" | grep -q "${{ github.event.inputs.version }}"; then
+            echo "Tag ${{ github.event.inputs.version }} already exists"
+            echo "TAG_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag ${{ github.event.inputs.version }} does not exist"
+            echo "TAG_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Delete existing tag if force update
+        if: steps.check_tag.outputs.TAG_EXISTS == 'true' && github.event.inputs.force_update == 'true'
+        run: |
+          git tag -d ${{ github.event.inputs.version }}
+          git push --delete origin ${{ github.event.inputs.version }} || true
+          echo "Deleted existing tag ${{ github.event.inputs.version }}"
+          
+      - name: Early exit if tag exists and not forcing update
+        if: steps.check_tag.outputs.TAG_EXISTS == 'true' && github.event.inputs.force_update != 'true'
+        run: |
+          echo "::error::Tag ${{ github.event.inputs.version }} already exists. Enable 'Force update' if you want to recreate it."
+          exit 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Check for release notes
+        id: check_release_notes
+        run: |
+          if [ -f "releases/${{ github.event.inputs.version }}.md" ]; then
+            echo "RELEASE_NOTES_EXIST=true" >> $GITHUB_OUTPUT
+          else
+            echo "RELEASE_NOTES_EXIST=false" >> $GITHUB_OUTPUT
+            echo "ΓÜá∩╕Å Warning: No release notes found at releases/${{ github.event.inputs.version }}.md"
+          fi
+
+      - name: Extract release notes
+        if: steps.check_release_notes.outputs.RELEASE_NOTES_EXIST == 'true'
+        id: release_notes
+        run: |
+          NOTES=$(cat releases/${{ github.event.inputs.version }}.md)
+          # Use GitHub's special command to handle multi-line strings in outputs
+          echo "NOTES<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Update version
+        run: |
+          # Update manifest.json
+          jq '.version = "${{ github.event.inputs.version }}"' manifest.json > manifest.json.tmp
+          mv manifest.json.tmp manifest.json
+
+          # Update versions.json
+          if [ -f versions.json ]; then
+            jq '. + {"${{ github.event.inputs.version }}": "0.15.0"}' versions.json > versions.json.tmp
+            mv versions.json.tmp versions.json
+          else
+            echo '{"${{ github.event.inputs.version }}": "0.15.0"}' > versions.json
+          fi
+          
+      - name: Create tag
+        run: |
+          git tag ${{ github.event.inputs.version }}
+
+      # Use the newer GitHub release action instead of the deprecated one
+      - name: Create GitHub release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Code Block File Export v${{ github.event.inputs.version }}
+          body: |
+            ${{ steps.check_release_notes.outputs.RELEASE_NOTES_EXIST == 'true' && steps.release_notes.outputs.NOTES || format('## Code Block File Export v{0}', github.event.inputs.version) }}
+            
+            ${{ github.event.inputs.custom_notes }}
+            
+            ### Release Assets
+            - main.js
+            - manifest.json
+            - styles.css
+
+            Compatible with Obsidian 0.15.0 and above.
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+          files: |
+            main.js
+            manifest.json
+            styles.css
+
+      - name: Create zip file
+        run: |
+          mkdir -p release/${{ github.event.inputs.version }}
+          cp main.js manifest.json styles.css release/${{ github.event.inputs.version }}/
+          cd release
+          zip -r ../code-block-file-export-${{ github.event.inputs.version }}.zip ${{ github.event.inputs.version }}
+          cd ..
+
+      - name: Upload zip file to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          files: |
+            code-block-file-export-${{ github.event.inputs.version }}.zip
+
+      - name: Commit version updates
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add manifest.json versions.json
+          git commit -m "Bump version to ${{ github.event.inputs.version }}"
+          git push
+          git push origin ${{ github.event.inputs.version }}
