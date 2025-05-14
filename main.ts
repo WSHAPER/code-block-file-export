@@ -167,12 +167,38 @@ export default class CodeBlockFileExportPlugin extends Plugin {
 		const iconContainer = document.createElement('div');
 		iconContainer.classList.add('code-block-export-icon');
 		
-		// Add SVG to the container
-		iconContainer.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 18H20V20H4V18Z" fill="currentColor"/>
-            <path d="M12 4L12 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M8 10L12 15L16 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>`;
+		// Add SVG using DOM API instead of innerHTML (for security)
+		const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svgElement.setAttribute("width", "18");
+		svgElement.setAttribute("height", "18");
+		svgElement.setAttribute("viewBox", "0 0 24 24");
+		svgElement.setAttribute("fill", "none");
+		svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+		
+		// Create the first path element
+		const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path1.setAttribute("d", "M4 18H20V20H4V18Z");
+		path1.setAttribute("fill", "currentColor");
+		svgElement.appendChild(path1);
+		
+		// Create the second path element
+		const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path2.setAttribute("d", "M12 4L12 15");
+		path2.setAttribute("stroke", "currentColor");
+		path2.setAttribute("stroke-width", "2");
+		path2.setAttribute("stroke-linecap", "round");
+		svgElement.appendChild(path2);
+		
+		// Create the third path element
+		const path3 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path3.setAttribute("d", "M8 10L12 15L16 10");
+		path3.setAttribute("stroke", "currentColor");
+		path3.setAttribute("stroke-width", "2");
+		path3.setAttribute("stroke-linecap", "round");
+		path3.setAttribute("stroke-linejoin", "round");
+		svgElement.appendChild(path3);
+		
+		iconContainer.appendChild(svgElement);
 		
 		// Append icon to button
 		exportButton.appendChild(iconContainer);

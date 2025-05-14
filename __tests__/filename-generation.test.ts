@@ -1,10 +1,35 @@
 import CodeBlockFileExportPlugin from '../main';
+import { App, PluginManifest } from 'obsidian';
 
 describe('CodeBlockFileExportPlugin Filename Generation', () => {
   let plugin: CodeBlockFileExportPlugin;
 
   beforeEach(() => {
-    plugin = new CodeBlockFileExportPlugin(null as any, null as any);
+    // Create a mock App object with the minimum required properties
+    const mockApp = {
+      vault: {},
+      workspace: {},
+      metadataCache: {}
+    } as unknown as App;
+    
+    // Create a valid plugin manifest
+    const manifest: PluginManifest = {
+      id: 'test-plugin',
+      name: 'Test Plugin',
+      version: '1.0.0',
+      minAppVersion: '0.15.0',
+      description: 'Test plugin description',
+      author: 'Test Author',
+      authorUrl: 'https://test.com',
+      isDesktopOnly: false
+    };
+    
+    // Create plugin instance with mocked dependencies
+    plugin = new CodeBlockFileExportPlugin(mockApp, manifest);
+    
+    // Add the loadData and saveData methods that our tests need
+    (plugin as any).loadData = async () => ({});
+    (plugin as any).saveData = async () => {};
   });
 
   test('createSuggestedFilename extracts function name correctly', () => {
